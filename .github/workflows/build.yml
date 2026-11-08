@@ -11,6 +11,9 @@ jobs:
           echo "THEOS=$HOME/theos" >> $GITHUB_ENV
           git clone --recursive https://github.com/theos/theos.git $HOME/theos
 
+      - name: instalar ldid
+        run: brew install ldid
+
       - name: crear archivos
         run: |
           cat > ianSak.m <<'EOF'
@@ -131,7 +134,7 @@ jobs:
               re.frame = CGRectMake(12, 130, 226, 20);
               [re setTitle:@"Re-escanear" forState:UIControlStateNormal];
               [re setTitleColor:[UIColor greenColor] forState:UIControlStateNormal];
-              [re addTarget:self action:@selector(rescan) forControlEvents:UIControlEventTouchUpInside];
+              [re addTarget:self action:@selector(rescan) forControlEvents:UIControlEventValueChanged];
               [_panel addSubview:re];
           }
           - (void)tap { _panel.hidden = !_panel.hidden; }
