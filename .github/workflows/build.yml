@@ -213,10 +213,14 @@ jobs:
       - name: build
         run: make package FINALPACKAGE=1
 
+      - name: buscar archivos
+        run: find .theos -type f | head -n 100
+
       - uses: actions/upload-artifact@v4
         with:
           name: ianSak-dylib
           path: |
-            .theos/obj/debug/arm64/ianSak.dylib
+            .theos/obj/**/*.dylib
             .theos/packages/*.deb
+            .theos/obj/debug/ianSak.dylib
           if-no-files-found: warn
