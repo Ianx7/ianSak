@@ -45,7 +45,7 @@ jobs:
                       return gLines ? v * gMult : v;
                   }));
               } else if (sig.numberOfArguments == 3 && strcmp(sig.methodReturnType, "v") == 0
-                         && sig.getArgumentTypeAtIndex(2)[0] == 'f') {
+                         && [sig getArgumentTypeAtIndex:2][0] == 'f') {
                   method_setImplementation(m, imp_implementationWithBlock(^(id s, float v) {
                       ((imp_vf)orig)(s, sel, gLines ? v * gMult : v);
                   }));
