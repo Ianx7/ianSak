@@ -36,23 +36,19 @@ jobs:
               NSString *k = [NSString stringWithFormat:@"%s|%s", class_getName(c), sel_getName(method_getName(m))];
               if ([gDone containsObject:k]) return;
               [gDone addObject:k];
-
               SEL sel = method_getName(m);
               IMP orig = method_getImplementation(m);
               NSMethodSignature *sig = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(m)];
-
               if (sig.numberOfArguments == 2 && sig.methodReturnType[0] == 'f') {
                   method_setImplementation(m, imp_implementationWithBlock(^float(id s) {
                       float v = ((imp_f)orig)(s, sel);
                       return gLines ? v * gMult : v;
                   }));
-                  NSLog(@"[ianSak] GETTER -[%s %s]", class_getName(c), sel_getName(sel));
               } else if (sig.numberOfArguments == 3 && strcmp(sig.methodReturnType, "v") == 0
                          && sig.getArgumentTypeAtIndex(2)[0] == 'f') {
                   method_setImplementation(m, imp_implementationWithBlock(^(id s, float v) {
                       ((imp_vf)orig)(s, sel, gLines ? v * gMult : v);
                   }));
-                  NSLog(@"[ianSak] SETTER -[%s %s]", class_getName(c), sel_getName(sel));
               }
           }
 
@@ -63,7 +59,6 @@ jobs:
                   NSString *cn = [@(class_getName(cls[i])) lowercaseString];
                   if (!([cn containsString:@"guideline"] || [cn containsString:@"aim"] ||
                         [cn containsString:@"trajectory"] || [cn containsString:@"aimline"])) continue;
-                  NSLog(@"[ianSak] CLASE %s", class_getName(cls[i]));
                   unsigned int mc = 0;
                   Method *ms = class_copyMethodList(cls[i], &mc);
                   for (unsigned j = 0; j < mc; j++) {
@@ -92,11 +87,9 @@ jobs:
           @end
 
           @implementation MenuVC
-
           - (void)viewDidLoad {
               [super viewDidLoad];
               self.view.backgroundColor = [UIColor clearColor];
-
               _fab = [UIButton buttonWithType:UIButtonTypeSystem];
               _fab.frame = CGRectMake(12, 120, 54, 54);
               _fab.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.75];
@@ -106,41 +99,34 @@ jobs:
               [_fab addTarget:self action:@selector(tap) forControlEvents:UIControlEventTouchUpInside];
               [_fab addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)]];
               [self.view addSubview:_fab];
-
               _panel = [[UIView alloc] initWithFrame:CGRectMake(12, 184, 250, 156)];
               _panel.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.88];
               _panel.layer.cornerRadius = 12;
               _panel.hidden = YES;
               [self.view addSubview:_panel];
-
               UILabel *t = [[UILabel alloc] initWithFrame:CGRectMake(12, 8, 220, 20)];
               t.text = @"ianSak — 8BP";
               t.textColor = [UIColor greenColor];
               t.font = [UIFont boldSystemFontOfSize:13];
               [_panel addSubview:t];
-
               UISwitch *sw = [[UISwitch alloc] initWithFrame:CGRectMake(12, 36, 51, 31)];
               sw.on = gLines;
               [sw addTarget:self action:@selector(linesChanged:) forControlEvents:UIControlEventValueChanged];
               [_panel addSubview:sw];
-
               UILabel *sl = [[UILabel alloc] initWithFrame:CGRectMake(72, 40, 160, 20)];
               sl.text = @"Líneas largas";
               sl.textColor = [UIColor whiteColor];
               sl.font = [UIFont systemFontOfSize:13];
               [_panel addSubview:sl];
-
               UISlider *sd = [[UISlider alloc] initWithFrame:CGRectMake(12, 80, 226, 30)];
               sd.minimumValue = 1; sd.maximumValue = 10; sd.value = gMult;
               [sd addTarget:self action:@selector(multChanged:) forControlEvents:UIControlEventValueChanged];
               [_panel addSubview:sd];
-
               _multLabel = [[UILabel alloc] initWithFrame:CGRectMake(12, 112, 226, 20)];
               _multLabel.text = [NSString stringWithFormat:@"Multiplicador: %.0fx", gMult];
               _multLabel.textColor = [UIColor lightGrayColor];
               _multLabel.font = [UIFont systemFontOfSize:12];
               [_panel addSubview:_multLabel];
-
               UIButton *re = [UIButton buttonWithType:UIButtonTypeSystem];
               re.frame = CGRectMake(12, 130, 226, 20);
               [re setTitle:@"Re-escanear" forState:UIControlStateNormal];
@@ -148,16 +134,13 @@ jobs:
               [re addTarget:self action:@selector(rescan) forControlEvents:UIControlEventTouchUpInside];
               [_panel addSubview:re];
           }
-
           - (void)tap { _panel.hidden = !_panel.hidden; }
-
           - (void)pan:(UIPanGestureRecognizer *)g {
               CGPoint p = [g translationInView:self.view];
               _fab.center = CGPointMake(_fab.center.x + p.x, _fab.center.y + p.y);
               [g setTranslation:CGPointZero inView:self.view];
               _panel.frame = CGRectMake(_fab.frame.origin.x, _fab.frame.origin.y + 64, 250, 156);
           }
-
           - (void)linesChanged:(UISwitch *)s { gLines = s.on; save(); }
           - (void)multChanged:(UISlider *)s {
               gMult = s.value;
@@ -165,7 +148,6 @@ jobs:
               save();
           }
           - (void)rescan { scan(); }
-
           @end
 
           __attribute__((constructor)) static void init(void) {
@@ -174,7 +156,6 @@ jobs:
               gLines = [d boolForKey:@"ianSak.lines"];
               float m = [d floatForKey:@"ianSak.mult"];
               if (m > 0) gMult = m;
-
               [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification
                                                                 object:nil queue:[NSOperationQueue mainQueue]
                                                             usingBlock:^(NSNotification *n) {
@@ -195,7 +176,6 @@ jobs:
           TARGET := iphone:clang:latest:15.0
           ARCHS = arm64
           include $(THEOS)/makefiles/common.mk
-
           TWEAK_NAME = ianSak
           ianSak_FILES = ianSak.m
           ianSak_FRAMEWORKS = UIKit Foundation
@@ -212,10 +192,12 @@ jobs:
           EOF
 
       - name: build
-        run: make
+        run: make package FINALPACKAGE=1
 
       - uses: actions/upload-artifact@v4
         with:
           name: ianSak-dylib
-          path: "**/ianSak.dylib"
-          if-no-files-found: error
+          path: |
+            .theos/obj/debug/arm64/ianSak.dylib
+            .theos/packages/*.deb
+          if-no-files-found: warn
